@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+
+var fs = require('fs'),
+  path = require('path'),
+  nopt = require('nopt'),
+  constants = require('constants'),
+  GitBugs = require('../');
+
+// parse args
+var opts = nopt();
+
+// positional arguments
+var remains = opts.argv.remain;
+
+var gb = GitBugs({
+  opts: opts,
+  argv: opts.argv
+});
+
+gb.on('error', function(er) {
+  var errs = Object.keys(constants),
+    core = !!~errs.indexOf(er.code);
+
+  if(core || opts.debug) {
+    console.error(er.stack || er);
+    return process.exit(er.code);
+  }
+
+  console.error('Error: ', er.message);
+  console.error('Try gitbugs --help');
+  process.exit(1);
+});
+
+gb.start(function(er) {
+  if(er) return;
+  process.exit(0);
+});

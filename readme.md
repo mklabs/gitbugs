@@ -3,10 +3,6 @@
 
 Mini issue tracker using git as a backend.
 
-Started 14:07.
-
-Readme and basic specs: 14:45
-
 ## Description
 
 
@@ -61,9 +57,7 @@ Currently, the following semantic should be supported:
 
 ## Commands
 
-`gitbugs` allone should output the following help:
-
-> todo
+`gitbugs` allone should output the following help.
 
 Note tha `gitbugs` binary is also alliased as `gb` for shorter commands.
 
