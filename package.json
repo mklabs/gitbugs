@@ -1,0 +1,19 @@
+{
+  "author": "mklabs",
+  "name": "gitbugs",
+  "description": "Mini issue tracker using git as a backend.",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mklabs/gitbugs.git"
+  },
+  "main": "./gitbugs.js",
+  "scripts": {
+    "test": "node test"
+  },
+  "engines": {
+    "node": "~0.6.1"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
