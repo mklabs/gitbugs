@@ -14,6 +14,7 @@ var fs = require('fs'),
 module.exports = GitBugs;
 
 function GitBugs(options, cb) {
+  var self = this;
   if(this === global) return new GitBugs(options, cb);
   var o = options || {};
 
@@ -21,22 +22,35 @@ function GitBugs(options, cb) {
 
   // current working directory
   this.opts = o.opts || {};
-  this.cwd = this.opts.cwd ? path.resolve(this.opts.cwd) : process.cwd();
+  this.cwd = o.cwd ? path.resolve(o.cwd) : this.resolve();
   this.argv = o.argv || this.opts.argv;
   this.silent = this.opts.silent || false;
+  this.commands = commands;
+
+  Object.keys(this.commands).forEach(function(cmd) {
+    self[cmd] = function() {
+      var args = Array.prototype.slice.call(arguments),
+        cb = self.cb(cmd, args.slice(-1)[0]),
+        fn = self.commands[cmd];
+
+      fn.apply(self, args.slice(0, -1).concat(cb));
+      self.last = cmd;
+      return self;
+    };
+  });
 
   if(cb) this.on('end', cb).on('error', cb);
 
   // init the git wrapper
-  this.git = new Git;
+  this.git = new Git(null, { cwd: this.cwd });
 
-  if(this.opts.help || !this.argv.remain[0]) return this.showHelp();
   if(this.opts.version) return console.log(require('./package.json').version);
 
   // if no argv passed, don't create cli router and dispacth
   if(!this.argv) return;
 
-  this.commands = commands;
+  if(this.opts.help || !this.argv.remain[0]) return this.showHelp();
+
   this.router = new Router(this.routes, this);
   this.on('404', this.showHelp.bind(this));
   this.router.on('error', this.emit.bind(this, 'error'));
@@ -172,6 +186,16 @@ GitBugs.prototype.path = function() {
   return path.resolve.apply(path, [this.cwd, '.gitbugs'].concat(args));
 };
 
+// walk up the filesystem till a `.git/` dir is found
+GitBugs.prototype.resolve = function resolve(base) {
+  base = base || process.cwd();
+  var git = path.resolve(base, '.git');
+  if(path.existsSync(git)) {
+    return path.dirname(git);
+  }
+  return resolve(path.dirname(base));
+};
+
 // given a message, returns the accoding slug title
 GitBugs.prototype.slug = function slug(message) {
   if(!message) return this.emit('error', new Error('No message'));
@@ -179,17 +203,25 @@ GitBugs.prototype.slug = function slug(message) {
 };
 
 // wrapper to require('read'), prompting user for inputs
-GitBugs.prototype.prompt = function prompt(prompts, cb) {
+GitBugs.prototype.prompt = function prompt(prompts, overrides, cb) {
   prompts = Array.isArray(prompts) ? prompts : [prompts];
+  if(!cb) cb = overrides, overrides = {};
   var inputs = {};
+
   (function ask(prompt) {
     if(!prompt) return cb(null, inputs);
+    var name = (prompt.name || prompt.prompt || '').toLowerCase();
+
+    if(overrides[name]) {
+      inputs[name] = overrides[name];
+      return ask(prompts.shift());
+    }
+
     read(prompt, function(er, val) {
       if(er) return cb(er);
       // reask if required and no value.
       if(!val && prompt.required) return ask(prompt);
-      var name = prompt.name || prompt.prompt;
-      inputs[name.toLowerCase()] = val;
+      inputs[name] = val;
       ask(prompts.shift());
     });
   })(prompts.shift());

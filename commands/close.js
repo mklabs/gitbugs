@@ -8,7 +8,7 @@ module.exports = function close(ids, cb) {
 
   if(!cb) cb = ids, ids = '';
   ids = ids || '';
-  ids = Array.isArray(ids) ? ids : ids.split(' ');
+  ids = Array.isArray(ids) ? ids : (ids + '').split(' ');
 
   // needs ids now, may prompt.
   if(!ids.length || !ids[0]) return cb(new Error('Missing id(s) with close command'));
@@ -24,12 +24,13 @@ module.exports = function close(ids, cb) {
       issues.push(issue);
       if(--ln) return;
       var args = issues.map(function(issue) { return issue.file; });
-      git.mv(args.concat('closed/'), function() {
+      git.mv(args.concat('closed/'), function(er) {
+        if(er) return cb(er);
         var ids = issues.map(function(issue) {
           return issue.id;
         });
 
-        git.commit('Close #' + ids.join(', '), cb);
+        git.commit('Close #' + ids.join(', '), { all: true }, cb);
       });
     });
   });

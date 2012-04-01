@@ -2,9 +2,11 @@
 var fs = require('fs');
 
 // create a new issue
-module.exports = function create(message, cb) {
+module.exports = function create(message, o, cb) {
   var self = this;
-  if(!cb) cb = message, message = '';
+  if(!cb) cb = o, o = {};
+  o = o || {};
+
   cb = this.cb('create', cb);
 
   var prompts = [{
@@ -18,7 +20,7 @@ module.exports = function create(message, cb) {
     default: ''
   }];
 
-  this.prompt(prompts, function(er, inputs) {
+  this.prompt(prompts, o, function(er, inputs) {
     if(er) return cb(er);
     var title = inputs.title,
       message = inputs.desc,
@@ -31,7 +33,7 @@ module.exports = function create(message, cb) {
         return parseInt(issue.id.replace(/^#/, ''), 10);
       }).reduce(function(a, b) {
         return a > b ? a : b;
-      });
+      }, 0) + 1;
 
       if(message) return next(id, title, message, cb);
 

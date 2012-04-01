@@ -6,64 +6,58 @@ var fs = require('fs'),
   events = require('events');
 
 var opts = nopt();
-var gb = new GitBugs;
+var gb = new GitBugs({ cwd: path.resolve('.test') });
 assert.ok(gb instanceof events.EventEmitter);
 assert.ok(GitBugs() instanceof events.EventEmitter);
 
-assert.equal(gb.path(), path.resolve('.gitbugs'));
+assert.equal(gb.path(), path.resolve('.test/.gitbugs'));
 
 // init
-// gb.init(next('init', 'Reinitialized existing Git repository in /Users/mk/Temp/dev/mklabs/gitbugs/.gitbugs/.git/'));
 
 gb.init(next('init', [
   /initialized\s(existing|empty)?\sGit\srepository\sin/i,
-  'in /Users/mk/Temp/dev/mklabs/gitbugs/.gitbugs/.git/'
+  'in /Users/mk/Temp/dev/mklabs/gitbugs/.test/.gitbugs/.git/'
 ]));
+
+gb.on('error', function(er) { console.error(er); });
 
 gb.and(function() {
 
   // repo init go
 
-  // hook - not implemented
-  gb.hook(next('hook')).and(function() {
-    console.log(' » Hook end', arguments);
-  });
-
   // list
-  gb.list().or(error('list with no issue opened', 'No opened issues.'));
+  gb.list(next('list with no issue opened'));
 
   // create
-  gb.create('This is a new issue', next('create a new issue', 'This is a new issue')).and(function() {
+  var title = 'This is a new issue';
+
+  gb.create('This is a new issue', { title: title, desc: title }, next('create a new issue', 'This is a new issue')).and(function() {
     gb.list(next('list with no args')).and(function(er, files) {
       assert.ifError(er);
       assert.equal(files.length, 1);
-      assert.equal(files[0], '1-this-is-a-new-issue.md');
-    });
-
-    gb.list('new', next('list with "new" term')).and(function(er, files) {
-      assert.ifError(er);
-      assert.equal(files.length, 1);
-      assert.equal(files[0], '1-this-is-a-new-issue.md');
+      var issue = files[0];
+      assert.equal(issue.id, '#1');
+      assert.equal(issue.file, '1-this-is-a-new-issue.md');
+      assert.equal(issue.title.trim(),'This is a new issue');
     });
 
     gb.get(1, function(er, issue) {
       assert.ifError(er);
       assert.equal(issue.id, 1);
       assert.equal(issue.file, '1-this-is-a-new-issue.md');
-      assert.equal(issue.content, '## #1 - This is a new issue\n\nThis is a new issue');
+      assert.equal(issue.content, '\nThis is a new issue');
       assert.equal(issue.title,'This is a new issue');
     }).and(function(er, issue) {
       assert.ifError(er);
       assert.equal(issue.id, 1);
       assert.equal(issue.file, '1-this-is-a-new-issue.md');
-      assert.equal(issue.content, '## #1 - This is a new issue\n\nThis is a new issue');
+      assert.equal(issue.content, '\nThis is a new issue');
       assert.equal(issue.title,'This is a new issue');
     });
 
-    gb.get(807987).or(error('get', 'No issue #807987'));
+    gb.get(807987, error('get', 'No issue #807987'));
 
-    // close - not implemented
-    gb.close(1, error('close', 'not implemented'));
+    gb.close(1, next('close', 'Close #1'));
   });
 });
 

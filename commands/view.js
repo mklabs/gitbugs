@@ -15,7 +15,6 @@ module.exports = function view(id, cb) {
     }, data);
 
     console.log(issue.content);
-
     cb();
   });
 };

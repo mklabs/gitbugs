@@ -9,8 +9,9 @@ module.exports = Git;
 
 // Git commands wrapper
 function Git(cmd, o, cb) {
-  if(this === global) return new Git(cmd, args, cb);
-  if(!cb) cb = o, o = {};
+  if(this === global) return new Git(cmd, o, cb);
+  if(typeof cb !== 'function') cb = o;
+  if(typeof cb !== 'function') cb = cmd, cmd = null;
 
   o = this.options = o || {};
   // o.over redirects child stdout/stderr to current process
@@ -52,7 +53,7 @@ Git.prototype.cmd = function cmd(command, args, over, cb) {
   var git = spawn('git', [command].concat(args), { cwd: this.repo });
 
   if(!cb && typeof over === 'function') cb = over, over = false;
-  if(over || o.over) {
+  if(over) {
     git.stdout.pipe(process.stdout);
     git.stderr.pipe(process.stderr);
   }
@@ -94,13 +95,18 @@ Git.prototype.commit = function commit(message, o, cb) {
 
   var args = ['-m', message];
   if(o.add) args.push('-a');
+  if(o.args) args = args.concat(o.args);
   this.cmd('commit', args, true, cb);
 };
 
 Git.prototype.mv = function mv(args, cb) {
   if(!cb) cb = args, args = [];
   if(!args.length) cb(new Error('should provide arguments with git mv'));
-  this.cmd('mv', args, true, cb);
+  var self = this;
+  this.add(function(er) {
+    if(er) return cb(er);
+    self.cmd('mv', args, true, cb);
+  });
 };
 
 Git.prototype.clone = function clone() {};

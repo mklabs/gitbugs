@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+
+var fs = require('fs'),
+  path = require('path');
+
+var GitBugs = require(':modpath');
+
+var gb = new GitBugs().on('error', function(er) { console.error(er); });
+
+var logfile = process.argv.slice(2)[0];
+
+var rIssue = /#([\d]+)/,
+  rFixes = /fix(e[sd]?)?\s#([\d]+)/i,
+  rCloses = /close[sd]?\s#([\d]+)/i;
+
+fs.readFile(path.resolve(logfile), 'utf8', function(err, commit) {
+  var issue = rIssue.test(commit);
+  if(!issue) return;
+
+  var id = commit.match(rIssue)[1],
+    fixes = commit.match(rFixes),
+    closes = commit.match(rCloses);
+
+  gb.git.cmd('rev-parse', ['HEAD'], false, function(er, sha1) {
+    if(er) throw er;
+    sha1 = sha1.trim().slice(0, 7);
+
+    gb.get(id, function(er, issue) {
+      if(er) return er;
+      var ws = fs.createWriteStream(gb.path(issue.file), { flags: 'a' });
+      ws.write('\n\n' + sha1 + ' - ' + commit);
+      ws.end();
+      if(!closes && !fixes) return;
+      gb.commands.close.call(gb, issue.id, function(er) {
+        if(er) return er;
+      });
+    });
+  });
+});
+
+

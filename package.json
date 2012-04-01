@@ -13,6 +13,7 @@
     "url": "git://github.com/mklabs/gitbugs.git"
   },
   "scripts": {
+    "pretest": "rm -rf .test/ && mkdir .test/ && cd .test/ && git init",
     "test": "node test"
   },
   "engines": {
