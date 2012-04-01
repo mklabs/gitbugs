@@ -3,8 +3,9 @@
 
 Mini issue tracker using git as a backend.
 
-## Description
+![Git Bugs](https://github.com/mklabs/test/raw/gh-pages/examples/screenshot.png)
 
+## Description
 
 A little cli tool to manage your issues from the cli, locally and in a
 distibuted way.

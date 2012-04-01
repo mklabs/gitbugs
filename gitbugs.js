@@ -62,7 +62,6 @@ util.inherits(GitBugs, events.EventEmitter);
 GitBugs.prototype.routes = {
   'init'                : 'init',
   'hook'                : 'hook',
-  'list'                : 'list',
   'create'              : 'create',
   'close'               : 'close',
 
