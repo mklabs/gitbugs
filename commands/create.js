@@ -27,12 +27,20 @@ module.exports = function create(message, cb) {
     self.commands.list.call(self, { silent: true }, function(er, files) {
       if(er) return cb(er);
 
-      var id = files.length + 1;
+      var id = files.map(function(issue) {
+        return parseInt(issue.id.replace(/^#/, ''), 10);
+      }).reduce(function(a, b) {
+        return a > b ? a : b;
+      });
+
       if(message) return next(id, title, message, cb);
 
-      if(!message) return this.editor(function(er, body) {
+      if(!message) return fs.writeFile(self.path('.edit'), '', function(er) {
         if(er) return cb(er);
-        next(id, title, body, cb);
+        self.editor(function(er, body) {
+          if(er) return cb(er);
+          next(id, title, body, cb);
+        });
       });
 
       function next(id, title, message, cb) {

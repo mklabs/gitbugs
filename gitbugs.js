@@ -50,7 +50,7 @@ GitBugs.prototype.routes = {
   'hook'                : 'hook',
   'list'                : 'list',
   'create'              : 'create',
-  'edit'                : 'edit',
+  'close'               : 'close',
 
   'list\\s?(closed?)?'  : 'list',
   'create\\s(.+)?'      : 'create',
@@ -59,7 +59,8 @@ GitBugs.prototype.routes = {
   'ls\\s?(closed?)?'    : 'list',
   'll\\s?(closed?)?'    : 'list',
   'view\\s?([\\d]+)?'   : 'view',
-  'info\\s?([\\d]+)?'   : 'info',
+  'info\\s?([\\d]+)?'   : 'view',
+  'edit\\s?([\\d]+)?'   : 'edit',
 
   'new'                 : 'create'
 };
@@ -197,17 +198,13 @@ GitBugs.prototype.prompt = function prompt(prompts, cb) {
 // wrapper to spawn process, "taking over" to spawn configured editor
 GitBugs.prototype.editor = function editor(file, cb) {
   if(!cb) cb = file, file = this.path('.edit');
-  var ws = fs.createWriteStream(file),
-    editor = process.platform === 'win32' ? 'notepad' : 'vim';
+  var editor = process.platform === 'win32' ? 'notepad' : 'vim';
 
-  fs.writeFile(file, '', function(er) {
-    if(er) return cb(er);
-    spawn(editor, [file], { customFds: [0, 1, 2]}).on('exit', function(code) {
-      if(code) return cb(new Error('Editor exit code not 0 - ' + code));
-      fs.readFile(file, 'utf8', function(er, body) {
-        if(er) return cb(er);
-        cb(null, body);
-      });
+  spawn(editor, [file], { customFds: [0, 1, 2]}).on('exit', function(code) {
+    if(code) return cb(new Error('Editor exit code not 0 - ' + code));
+    fs.readFile(file, 'utf8', function(er, body) {
+      if(er) return cb(er);
+      cb(null, body);
     });
   });
 };

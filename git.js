@@ -85,11 +85,16 @@ Git.prototype.add = function add(files, cb) {
   this.cmd('add', files, true, cb);
 };
 
-Git.prototype.commit = function commit(message, cb) {
+Git.prototype.commit = function commit(message, o, cb) {
+  if(!cb) cb = o, o = {};
   if(!cb) cb = message, message = '';
+
   // todo: if no message should prompt
   if(!message) cb(new Error('should provide a message'));
-  this.cmd('commit', ['-m', message], true, cb);
+
+  var args = ['-m', message];
+  if(o.add) args.push('-a');
+  this.cmd('commit', args, true, cb);
 };
 
 Git.prototype.mv = function mv(args, cb) {

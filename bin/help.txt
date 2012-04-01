@@ -2,11 +2,13 @@
 » gitbug <command> <options>
 
 init      Initialize a new git bugs repo, relative $cwd
-hook      Enable post-commit hook for the current git repo
-list      List all open issues.
-create    Create a new issue.
+create    Create a new issue
 close     Close the given issue
+list      List all open issues
+view      Display issue's id, title, status and content
+edit      Open the default text editor for the given issue
+hook      Enable post-commit hook for the current git repo
 
 ls, ll  → list
 new     → create
-
+info    → view
