@@ -1,7 +1,7 @@
 {
   "author": "mklabs",
   "name": "gitbugs",
-  "description": "Mini issue tracker using git as a backend.",
+  "description": "A little tool to manage your issues from the CLI, locally and in a distributed way.",
   "version": "0.0.1",
   "main": "./gitbugs.js",
   "bin": {

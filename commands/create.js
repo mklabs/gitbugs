@@ -5,8 +5,9 @@ var fs = require('fs');
 module.exports = function create(message, o, cb) {
   var self = this;
   if(!cb) cb = o, o = {};
-  o = o || {};
+  if(!cb) cb = message, message = '';
 
+  o = o || {};
   cb = this.cb('create', cb);
 
   var prompts = [{

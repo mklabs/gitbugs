@@ -1,5 +1,5 @@
 
-» gitbug <command> <options>
+» gitbugs <command> <options>
 
 init      Initialize a new git bugs repo, relative $cwd
 create    Create a new issue

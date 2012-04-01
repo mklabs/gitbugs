@@ -27,8 +27,6 @@ module.exports = function edit(id, cb) {
           id = match[1],
           title = match[2];
 
-        console.log('id', id);
-        console.log('title', title);
         if(!id) return cb(new Error('Invalid ID'));
         if(!title) return cb(new Error('Invalid title'));
 
